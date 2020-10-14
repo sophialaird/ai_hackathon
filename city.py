@@ -5,7 +5,8 @@ import random
 
 
 class City:
-    def __init__(self, size: int = 1000, initial_sick: float = 0.10):
+    def __init__(self, name: str, size: int = 1000, initial_sick: float = 0.10):
+        self.name = name
         self.pop: t.List[Person] = []
         self.start_date: date = date(2021, 1, 1)
         self.current_date: date = self.start_date
@@ -120,7 +121,28 @@ class City:
                     interactions[other_idx] += 5
 
     def step4_vaccine(self):
-        pass
+        vaccines_total = 1000
+        dates_available = [self.start_date + timedelta(days=30*(i+1)) for i in range(10)]
+        vaccines_available = vaccines_total // len(dates_available)
+        if self.current_date not in dates_available:
+            return
+        vaccines_given = 0
+        person_scores = [p.vaccine_score for p in self.pop if p.is_alive and p.is_vaccinated is False and p.vaccine_score >= 0]
+        person_scores.sort()
+        if len(person_scores) < vaccines_available:
+            # everyone gets a vaccine
+            for person in self.pop:
+                if person.is_alive and person.is_vaccinated is False and person.vaccine_score >= 0:
+                    person.vaccinate()
+        else:
+            # only people with a score below a certain value get vaccinated
+            max_score_to_vaccinate = person_scores[vaccines_available]
+            for person in self.pop:
+                if person.is_alive and person.is_vaccinated is False and 0 <= person.vaccine_score < max_score_to_vaccinate:
+                    person.vaccinate()
+                vaccines_given += 1
+                if vaccines_given > vaccines_available:
+                    break
 
     def step5_health_update(self, interactions: t.List[int]):
         for idx, person in enumerate(self.pop):

@@ -1,4 +1,5 @@
 from city import City
+from vaccine import VaccineBase, NoVaccine, RandomVaccine
 import pathlib
 import time
 import csv
@@ -33,8 +34,9 @@ def create_summary_dictionary(c: City):
 
 if __name__ == '__main__':
     start_time = time.perf_counter()
-    newmarket = City(size=1000)
-    print_summary(newmarket)
+    newmarket = City(name='newmarket', size=1000)
+    vaccine: VaccineBase = RandomVaccine(newmarket)
+    vaccine.assign_scores()
 
     # Create the output directory
     output_dir = pathlib.Path(r'./output')
@@ -43,7 +45,7 @@ if __name__ == '__main__':
     print(output_dir.absolute())
 
     # Output data
-    csv_file_path = output_dir / 'newmarket.csv'
+    csv_file_path = output_dir / f'{newmarket.name}.csv'
     with csv_file_path.open('w', newline='') as csv_file:
         info = create_summary_dictionary(newmarket)
         writer = csv.DictWriter(csv_file, fieldnames=list(info.keys()))
@@ -53,6 +55,4 @@ if __name__ == '__main__':
         for tick in range(1, 365):
             newmarket.run_timestep()
             writer.writerow(create_summary_dictionary(newmarket))
-
-    print_summary(newmarket)
     print(f"Total time: {time.perf_counter() - start_time:0.4f} seconds")

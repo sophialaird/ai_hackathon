@@ -20,6 +20,8 @@ class Person:
     sex_female: bool                                         # True for female, False for male
 
     # medical info
+    vaccine_score: float = -1.0                               # -1 = no vaccine, otherwise [0, 1]
+    is_vaccinated: bool = False                               # True if vaccinated, False otherwise
     preexisting_condition: bool = False
     covid_immunity: float = 0                                 # 0 = vulnerable, 1 = immune
     covid_start_date: t.Optional[date] = None                 # date they first get covid
@@ -67,6 +69,10 @@ class Person:
     def infect(self, dt: date):
         if self.covid_start_date is None:
             self.covid_start_date = dt
+
+    def vaccinate(self):
+        self.is_vaccinated = True
+        self.covid_immunity = 1.0
 
     def kill(self, dt: date):
         self.is_alive = False

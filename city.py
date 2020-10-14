@@ -5,7 +5,7 @@ import random
 
 
 class City:
-    def __init__(self, size: int = 1000):
+    def __init__(self, size: int = 1000, initial_sick: float = 0.10):
         self.pop: t.List[Person] = []
         self.start_date: date = date(2021, 1, 1)
         self.current_date: date = self.start_date
@@ -18,6 +18,8 @@ class City:
                 sex_female=True if random.random() >= 0.5 else False,
                 is_alive=True
             )
+            if random.random() < initial_sick:
+                person.infect(self.start_date)
             self.pop.append(person)
 
     @property
@@ -64,24 +66,52 @@ class City:
 
         :return:
         """
-        self.step1_work()
-        self.step2_home()
-        self.step3_shopping()
+        interactions = [0] * len(self.pop)
+        self.step1_work(interactions)
+        self.step2_home(interactions)
+        self.step3_shopping(interactions)
         self.step4_vaccine()
-        self.step5_health()
+        self.step5_health(interactions)
         self.current_date += timedelta(days=1)
 
-    def step1_work(self):
-        pass
+    def get_sick_people(self) -> t.List[int]:
+        sick_people = []
+        for idx, p in enumerate(self.pop):
+            if p.is_alive and p.covid_start_date is not None:
+                sick_people.append(idx)
+        return sick_people
 
-    def step2_home(self):
-        pass
+    def step1_work(self, interactions: t.List[int]):
+        sick_people = self.get_sick_people()
+        for sick_idx in sick_people:
+            sick_person = self.pop[sick_idx]
+            for other_idx, work_person in enumerate(self.pop):
+                if work_person.work == sick_person.work:
+                    interactions[other_idx] += 2
 
-    def step3_shopping(self):
-        pass
+    def step2_home(self, interactions: t.List[int]):
+        sick_people = self.get_sick_people()
+        for sick_idx in sick_people:
+            sick_person = self.pop[sick_idx]
+            for other_idx, home_person in enumerate(self.pop):
+                if home_person.household == sick_person.household:
+                    interactions[other_idx] += 10
+
+    def step3_shopping(self, interactions: t.List[int]):
+        sick_people = self.get_sick_people()
+        for sick_idx in sick_people:
+            sick_person = self.pop[sick_idx]
+            for other_idx, shop_person in enumerate(self.pop):
+                if shop_person.shopping & sick_person.shopping:
+                    interactions[other_idx] += 1
 
     def step4_vaccine(self):
         pass
 
-    def step5_health(self):
-        pass
+    def step5_health(self, interactions: t.List[int]):
+        for idx, person in enumerate(self.pop):
+            num_interactions = interactions[idx]
+            chance_of_sickness = (1+0.00001) ** num_interactions - 1
+            chance_of_sickness *= 1 - person.covid_immunity
+            if random.random() < chance_of_sickness:
+                person.infect(self.current_date)

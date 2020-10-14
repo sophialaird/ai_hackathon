@@ -21,3 +21,14 @@ class Person:
     visible_symptoms: bool = False                            # has visible symptoms
     sickness_level: int = 0                                   # 0 = no symptoms, 1 = mild, 2 = medium, 3 = high
     is_alive: bool = True
+
+    def infect(self, dt: date):
+        self.covid_start_date = dt
+
+    def kill(self, dt: date):
+        self.is_alive = False
+        self.covid_end_date = dt
+
+    def recover(self, dt: date):
+        self.covid_end_date = dt
+        self.covid_immunity = 1.0

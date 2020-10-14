@@ -1,5 +1,6 @@
 from city import City
 import pathlib
+import time
 import csv
 
 
@@ -8,10 +9,10 @@ def print_summary(c: City):
     print(f"\tStarting population: {c.starting_population}")
     print(f"\tFemale population: Female {c.sex_distribution:0.1%} / Male: {1-c.sex_distribution:0.1%}")
     print(f"\tCurrent population: {c.population}")
-    print(f"\tTotal Recovered: {c.cumulative_recovered}")
-    print(f"\tTotal Dead (Covid): {c.number_dead}")
-    print(f"\tTotal sick with COVID: {c.cumulative_sick}")
-    print(f"\tTotal never sick: {c.total_uninfected}")
+    print(f"\tSick: {c.num_sick}")
+    print(f"\tRecovered: {c.num_recovered}")
+    print(f"\tVulnerable: {c.num_vulnerable}")
+    print(f"\tDead: {c.num_dead}")
 
 
 def create_summary_dictionary(c: City):
@@ -22,15 +23,16 @@ def create_summary_dictionary(c: City):
         'current_pop': c.population,
         'female_pop_pct': c.sex_distribution,
         'male_pop_pct': 1-c.sex_distribution,
-        'total_recovered': c.cumulative_recovered,
-        'total_sick': c.cumulative_sick,
-        'never_sick': c.total_uninfected,
-        'total_dead': c.number_dead
+        'sick': c.num_sick,
+        'recovered': c.num_recovered,
+        'vulnerable': c.num_vulnerable,
+        'dead': c.num_dead
     }
     return res
 
 
 if __name__ == '__main__':
+    start_time = time.perf_counter()
     newmarket = City(size=1000)
     print_summary(newmarket)
 
@@ -48,8 +50,9 @@ if __name__ == '__main__':
         writer.writeheader()    # Write the header
         writer.writerow(info)   # Write the initial data
 
-        for tick in range(1, 11):
+        for tick in range(1, 365):
             newmarket.run_timestep()
             writer.writerow(create_summary_dictionary(newmarket))
 
     print_summary(newmarket)
+    print(f"Total time: {time.perf_counter() - start_time:0.4f} seconds")

@@ -1,4 +1,6 @@
 from city import City
+import pathlib
+import csv
 
 
 def print_summary(c: City):
@@ -16,7 +18,13 @@ if __name__ == '__main__':
     hamilton = City(size=1000)
     print_summary(hamilton)
 
-    for tick in range(1, 10):
-        hamilton.run_timestep()
-        print_summary(hamilton)
+    # Create the output directory
+    output_dir = pathlib.Path(r'./output')
+    if output_dir.exists() is False:
+        output_dir.mkdir()
+    print(output_dir.absolute())
+
+    # for tick in range(1, 10):
+    #     hamilton.run_timestep()
+    #     print_summary(hamilton)
 

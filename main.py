@@ -1,6 +1,7 @@
 from city import City
 from vaccine import VaccineBase, NoVaccine, RandomVaccine
-import pathlib
+from ai_vaccine import VaccineAI
+from settings import *
 import copy
 import time
 import csv
@@ -22,17 +23,19 @@ def create_summary_dictionary(c: City):
         'wasted_vaccine': c.num_wasted_vaccines,
         'mortality_rate': c.num_dead / max(1, (c.num_dead + c.num_recovered)),
         'infection_rate': (c.num_recovered + c.num_dead + c.num_sick) / max(1, c.starting_population),
+        'teacher_sick_rate': c.teachers_pct_sick,
+        'hospital_worker_sick_rate': c.hospital_worker_pct_sick,
+        'frontline_worker_sick_rate': c.frontline_worker_pct_sick
     }
     return res
 
 
 def trial(vaccine: VaccineBase, city: City, trial_num: int, days: int):
-    start_time = time.perf_counter()
+    trial_start_time = time.perf_counter()
     # assign the scores
     vaccine.assign_scores(city)
 
     # Create the output directory
-    output_dir = pathlib.Path(r'./output')
     if output_dir.exists() is False:
         output_dir.mkdir()
 
@@ -50,7 +53,9 @@ def trial(vaccine: VaccineBase, city: City, trial_num: int, days: int):
             city.run_timestep()
             writer.writerow(create_summary_dictionary(city))
 
-    print(f"\tCompleted trial {city.name} - {vaccine.name} #{trial_num}: {time.perf_counter() - start_time:0.2f} sec")
+    print(
+        f"\tCompleted trial {city.name} - {vaccine.name} #{trial_num}: "
+        f"{time.perf_counter() - trial_start_time:0.2f} sec")
 
 
 if __name__ == '__main__':
@@ -58,13 +63,21 @@ if __name__ == '__main__':
     city_size = 1000
     initial_sick = 100
     days = 180
+    train_ai = False
 
     start_time = time.perf_counter()
     random_vaccine = RandomVaccine('random_vaccine')
     no_vaccine = NoVaccine('no_vaccine')
+    ai_vaccine = VaccineAI('ai')
+    if train_ai:
+        ai_vaccine.train(max_cycles=100)
+        ai_vaccine.save_nn()
+    else:
+        ai_vaccine.load_nn()
 
     for i in range(1):
-        city = City(name='newmarket', size=city_size, initial_sick=initial_sick)
-        trial(RandomVaccine('random_vaccine'), copy.deepcopy(city), trial_num=i, days=days)
-        trial(NoVaccine('no_vaccine'), copy.deepcopy(city), trial_num=i, days=days)
+        trial_city = City(name='newmarket', size=city_size, initial_sick=initial_sick)
+        trial(random_vaccine, copy.deepcopy(trial_city), trial_num=i, days=days)
+        trial(no_vaccine, copy.deepcopy(trial_city), trial_num=i, days=days)
+        trial(ai_vaccine, copy.deepcopy(trial_city), trial_num=i, days=days)
     print(f"Completed trials: {time.perf_counter() - start_time:0.2f} seconds")

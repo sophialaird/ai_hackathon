@@ -8,14 +8,14 @@ import random
 class City:
     def __init__(self, name: str, size: int = 1000, initial_sick: int = 100):
         self.name = name
-        self.pop: t.List[Person] = []                        # holds a list of people
-        self.households: t.Dict[int, t.Set[int]] = dict()    # gives the set of people in a household
-        self.work: t.Dict[int, t.Set[int]] = dict()          # gives the set of people at a workplace
-        self.shopping: t.Dict[int, t.Set[int]] = dict()      # gives the set of people at a shopping place
+        self.pop: t.List[Person] = []  # holds a list of people
+        self.households: t.Dict[int, t.Set[int]] = dict()  # gives the set of people in a household
+        self.work: t.Dict[int, t.Set[int]] = dict()  # gives the set of people at a workplace
+        self.shopping: t.Dict[int, t.Set[int]] = dict()  # gives the set of people at a shopping place
         self.start_date: date = date(2021, 1, 1)
         self.current_date: date = self.start_date
         self.vaccine_dates: t.List[date] = [self.start_date + timedelta(days=15 * (i + 1)) for i in range(10)]
-        self.vaccine_order: t.List[int] = []                 # a list showing the order people get their vaccines
+        self.vaccine_order: t.List[int] = []  # a list showing the order people get their vaccines
         self.add_people(pop_size=size)
         self.create_sick_people(initial_sick)
         self.build_helpers()
@@ -83,6 +83,20 @@ class City:
         :return:
         """
         return sum([p.vaccine_wasted for p in self.pop])
+
+    @property
+    def teachers_pct_sick(self) -> float:
+        return sum([p.is_teacher and p.was_sick for p in self.pop]) / sum([p.is_teacher for p in self.pop])
+
+    @property
+    def hospital_worker_pct_sick(self) -> float:
+        return sum([p.is_hospital_worker and p.was_sick for p in self.pop]) / sum(
+            [p.is_hospital_worker for p in self.pop])
+
+    @property
+    def frontline_worker_pct_sick(self) -> float:
+        return sum([p.is_frontline_worker and p.was_sick for p in self.pop]) / sum(
+            [p.is_frontline_worker for p in self.pop])
 
     # --------------------------------------------------------------------------------------------
     def run_timestep(self):
@@ -191,9 +205,7 @@ class City:
         for idx, person in enumerate(self.pop):
             if person.is_vulnerable:
                 num_interactions = interactions[idx]
-                chance_of_sickness = (1 + CHANGE_OF_GETTING_SICK_FROM_INTERACTION) ** num_interactions - 1
-                chance_of_sickness *= (1 - person.covid_immunity)
-                if random.random() < chance_of_sickness:
+                if random.random() < person.chance_of_getting_covid(num_interactions):
                     person.infect(self.current_date)
 
             # update their health
@@ -207,13 +219,28 @@ class City:
         :return:
         """
         for i in range(pop_size):
+            age = random.randint(0, 100)
+            if age < 18:
+                # child going to school - not much shopping
+                work_id = SCHOOL_ID
+                shopping_ids = set([random.randint(0, 20) for _ in range(1)])
+            else:
+                work_id = random.randint(0, 20)
+                shopping_ids = set([random.randint(0, 20) for _ in range(5)])
+
+            if age > 50:
+                preexisting_condition = random.random() < 0.2
+            else:
+                preexisting_condition = random.random() < 0.05
+
             person = Person(
                 household=random.randint(0, pop_size // 4),
-                work=random.randint(0, 20),
-                shopping=set([random.randint(0, 20) for _ in range(5)]),
-                age=10,
+                work=work_id,
+                shopping=shopping_ids,
+                age=age,
                 sex_female=True if random.random() >= 0.5 else False,
-                is_alive=True
+                is_alive=True,
+                preexisting_condition=preexisting_condition
             )
             self.pop.append(person)
 

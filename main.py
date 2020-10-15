@@ -70,12 +70,14 @@ if __name__ == '__main__':
     no_vaccine = NoVaccine('no_vaccine')
     ai_vaccine = VaccineAI('ai')
     if train_ai:
+        # Train an AI and save it to disk
         ai_vaccine.train(max_cycles=100)
         ai_vaccine.save_nn()
     else:
+        # Load the AI from disk
         ai_vaccine.load_nn()
 
-    for i in range(1):
+    for i in range(3):
         trial_city = City(name='newmarket', size=city_size, initial_sick=initial_sick)
         trial(random_vaccine, copy.deepcopy(trial_city), trial_num=i, days=days)
         trial(no_vaccine, copy.deepcopy(trial_city), trial_num=i, days=days)

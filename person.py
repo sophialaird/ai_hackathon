@@ -3,11 +3,7 @@ from datetime import date
 import typing as t
 import random
 
-
-RECOVERY_RATE_STAGE_0 = 0.5   # TODO: need to verify these
-RECOVERY_RATE_STAGE_1 = 0.3
-RECOVERY_RATE_STAGE_2 = 0.5
-RECOVERY_RATE_STAGE_3 = 0.8
+from settings import *
 
 
 @dataclasses.dataclass
@@ -20,8 +16,10 @@ class Person:
     sex_female: bool                                         # True for female, False for male
 
     # medical info
+    initially_sick: bool = False                              # True if initially sick (in setup) or False otherwise
     vaccine_score: float = -1.0                               # -1 = no vaccine, otherwise [0, 1]
     is_vaccinated: bool = False                               # True if vaccinated, False otherwise
+    vaccine_wasted: bool = False                              # True if given vaccine but already infected
     preexisting_condition: bool = False
     covid_immunity: float = 0                                 # 0 = vulnerable, 1 = immune
     covid_start_date: t.Optional[date] = None                 # date they first get covid
@@ -32,6 +30,7 @@ class Person:
     is_alive: bool = True
     in_quarantine: bool = False
 
+    # Information ------------------------------------------------------------------------------------------------------
     @property
     def is_infected(self) -> bool:
         return self.covid_start_date is not None and self.is_alive
@@ -66,6 +65,7 @@ class Person:
         else:
             return self.shopping
 
+    # Actions ----------------------------------------------------------------------------------------------------------
     def infect(self, dt: date):
         if self.covid_start_date is None:
             self.covid_start_date = dt
@@ -73,6 +73,7 @@ class Person:
     def vaccinate(self):
         self.is_vaccinated = True
         self.covid_immunity = 1.0
+        self.vaccine_wasted = self.is_infected   # if vaccinated, but was previously infected, then vaccine is wasted
 
     def kill(self, dt: date):
         self.is_alive = False

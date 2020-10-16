@@ -218,31 +218,45 @@ class City:
         :param pop_size:
         :return:
         """
-        for i in range(pop_size):
-            age = random.randint(0, 100)
-            if age < 18:
-                # child going to school - not much shopping
-                work_id = SCHOOL_ID
-                shopping_ids = set([random.randint(0, 20) for _ in range(1)])
-            else:
-                work_id = random.randint(0, 20)
-                shopping_ids = set([random.randint(0, 20) for _ in range(5)])
-
-            if age > 50:
-                preexisting_condition = random.random() < 0.2
-            else:
-                preexisting_condition = random.random() < 0.05
-
-            person = Person(
-                household=random.randint(0, pop_size // 4),
-                work=work_id,
-                shopping=shopping_ids,
-                age=age,
-                sex_female=True if random.random() >= 0.5 else False,
-                is_alive=True,
-                preexisting_condition=preexisting_condition
-            )
-            self.pop.append(person)
+        current_household = 0
+        while len(self.pop) < pop_size:
+            # make the first adult in the household
+            for _ in range(random.randint(1, 4)):
+                age = random.randint(18, 65)
+                random_value = random.random()
+                if random_value < 0.04:
+                    work = HOSPITAL_ID
+                elif random_value < 0.08:
+                    work = SCHOOL_ID
+                elif random_value < (0.08 + 0.10):
+                    work = FRONTLINE_ID
+                else:
+                    work = random.randint(FRONTLINE_ID+1, 20)
+                adult = Person(
+                    age=age,
+                    work=work,
+                    shopping=set([random.randint(0, 20) for _ in range(6)]),
+                    preexisting_condition=(random.random() < 0.05) if age < 50 else (random.random() < 0.10),
+                    household=current_household,
+                    sex_female=True if random.random() >= 0.5 else False,
+                    is_alive=True
+                )
+                if len(self.pop) < pop_size:
+                    self.pop.append(adult)
+            for _ in range(random.randint(0, 3)):
+                age = random.randint(0, 18)
+                kid = Person(
+                    age=age,
+                    work=SCHOOL_ID if age > 5 else NO_WORK_ID,
+                    shopping=set([random.randint(0, 20) for _ in range(2)]),
+                    preexisting_condition=(random.random() < 0.05),
+                    household=current_household,
+                    sex_female=True if random.random() >= 0.5 else False,
+                    is_alive=True
+                )
+                if len(self.pop) < pop_size:
+                    self.pop.append(kid)
+            current_household += 1
 
     def create_sick_people(self, number_sick: int):
         """

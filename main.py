@@ -79,9 +79,9 @@ def trial(vaccine: VaccineBase, city: City, trial_num: int, days: int):
 
 if __name__ == '__main__':
     print('COVID 19 Simulator')
-    city_size = 1000
-    initial_sick = 100
-    days = 180
+    city_size = 90000
+    initial_sick = 1000
+    days = 365
     train_ai = True
 
     start_time = time.perf_counter()

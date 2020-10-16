@@ -7,7 +7,7 @@ RECOVERY_RATE_STAGE_1 = 0.3                           # Base chance of recoverin
 RECOVERY_RATE_STAGE_2 = 0.5                           # Base chance of recovering from stage 2 (else go to stage 3)
 RECOVERY_RATE_STAGE_3 = 0.9                           # Base chance of recovering from stage 3 (else you die)
 
-CHANGE_OF_GETTING_SICK_FROM_INTERACTION = 0.000003    # Chance of getting sick from a single interaction)
+CHANGE_OF_GETTING_SICK_FROM_INTERACTION = 0.000002    # Chance of getting sick from a single interaction)
 
 
 # Constants

@@ -81,7 +81,7 @@ class Person:
             return -1
         elif self.sickness_level == 3:
             return HOSPITAL_ID
-        if self.is_alive is False and self.sickness_level >= 1:
+        elif self.is_alive is False and self.sickness_level >= 1:
             return NO_WORK_ID
         else:
             return self.work

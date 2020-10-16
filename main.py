@@ -1,10 +1,20 @@
 from city import City
+from person import Person
 from vaccine import VaccineBase, NoVaccine, RandomVaccine
 from ai_vaccine import VaccineAI
 from settings import *
 import copy
 import time
 import csv
+
+
+def create_person_dictionary(p: Person):
+    return {
+        'vaccine_score': p.vaccine_score,
+        'is_heathcare': p.is_hospital_worker,
+        'age': p.age,
+
+    }
 
 
 def create_summary_dictionary(c: City):
@@ -53,6 +63,15 @@ def trial(vaccine: VaccineBase, city: City, trial_num: int, days: int):
             city.run_timestep()
             writer.writerow(create_summary_dictionary(city))
 
+    csv_person_info_file_path = output_dir / f'{city.name}-{vaccine.name}-person_info-{trial_num}.csv'
+    with csv_person_info_file_path.open('w', newline='') as csv_file:
+        person_info = create_person_dictionary(city.pop[0])
+        writer = csv.DictWriter(csv_file, fieldnames=list(person_info.keys()))
+        writer.writeheader()
+        for person in city.pop:
+            person_info = create_person_dictionary(person)
+            writer.writerow(person_info)
+
     print(
         f"\tCompleted trial {city.name} - {vaccine.name} #{trial_num}: "
         f"{time.perf_counter() - trial_start_time:0.2f} sec")
@@ -63,7 +82,7 @@ if __name__ == '__main__':
     city_size = 1000
     initial_sick = 100
     days = 180
-    train_ai = False
+    train_ai = True
 
     start_time = time.perf_counter()
     random_vaccine = RandomVaccine('random_vaccine')

@@ -91,7 +91,7 @@ def trial(vaccine: VaccineBase, city: City, trial_num: int, days: int):
 
 if __name__ == '__main__':
     print('COVID 19 Simulator')
-    city_size = 2000
+    city_size = 1000
     initial_sick = int(city_size * 0.05)
     days = 365
     train_ai = False
@@ -108,7 +108,7 @@ if __name__ == '__main__':
         # Load the AI from disk
         ai_vaccine.load_nn()
 
-    for i in range(3):
+    for i in range(1):
         trial_city = City(name='newmarket', size=city_size, initial_sick=initial_sick)
         trial(random_vaccine, copy.deepcopy(trial_city), trial_num=i, days=days)
         trial(no_vaccine, copy.deepcopy(trial_city), trial_num=i, days=days)

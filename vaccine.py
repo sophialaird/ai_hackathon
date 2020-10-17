@@ -3,7 +3,7 @@ from person import Person
 import random
 
 
-class Vaccin meBase:
+class VaccineBase:
     def __init__(self, vaccine_name: str):
         self.name = vaccine_name
 

@@ -12,7 +12,16 @@ def create_person_dictionary(p: Person):
     return {
         'vaccine_score': p.vaccine_score,
         'is_heathcare': p.is_hospital_worker,
+        'is front line': p.is_frontline_worker,
+        'is teacher': p.is_teacher,
         'age': p.age,
+        'household': p.household,
+        'female': p.sex_female,
+        'covid start date': p.covid_start_date,
+        'covid end date': p.covid_end_date,
+        'where they shop': p.shopping_id,
+        'work place': p.workplace_id,
+
 
     }
 
@@ -51,6 +60,7 @@ def trial(vaccine: VaccineBase, city: City, trial_num: int, days: int):
 
     # Output data
     csv_file_path = output_dir / f'{city.name}-{vaccine.name}-{trial_num}.csv'
+    print(f'\t\tWriting to {csv_file_path}')
     with csv_file_path.open('w', newline='') as csv_file:
         # Create the file and get the initial data
         info = create_summary_dictionary(city)
@@ -60,6 +70,8 @@ def trial(vaccine: VaccineBase, city: City, trial_num: int, days: int):
 
         # Run the simulation for this many days
         for tick in range(1, days):
+            if tick % 30 == 0:
+                print('.', end='', flush=True)
             city.run_timestep()
             writer.writerow(create_summary_dictionary(city))
 
@@ -79,10 +91,10 @@ def trial(vaccine: VaccineBase, city: City, trial_num: int, days: int):
 
 if __name__ == '__main__':
     print('COVID 19 Simulator')
-    city_size = 90000
-    initial_sick = 1000
+    city_size = 2000
+    initial_sick = int(city_size * 0.05)
     days = 365
-    train_ai = True
+    train_ai = False
 
     start_time = time.perf_counter()
     random_vaccine = RandomVaccine('random_vaccine')
@@ -90,7 +102,7 @@ if __name__ == '__main__':
     ai_vaccine = VaccineAI('ai')
     if train_ai:
         # Train an AI and save it to disk
-        ai_vaccine.train(max_cycles=100)
+        ai_vaccine.train(max_cycles=150)
         ai_vaccine.save_nn()
     else:
         # Load the AI from disk
